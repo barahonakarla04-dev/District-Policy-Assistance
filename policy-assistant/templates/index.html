@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Handbook Helper</title>
+  <style>
+    /* ---- Design: quiet "school notice" look ----
+       Deep ink blue for trust, one marigold highlight (like a
+       highlighter on a handbook page). System fonts = zero setup. */
+    :root {
+      --ink: #1e2a4a;        /* deep navy text */
+      --paper: #fbfaf7;      /* soft paper background */
+      --line: #d9d6cc;       /* faint rule lines */
+      --highlight: #f5c33b;  /* marigold highlighter */
+      --muted: #6b7280;
+    }
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      font-family: Georgia, 'Times New Roman', serif;
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+    main { width: 100%; max-width: 640px; }
+
+    /* Header: title with a highlighter swipe under the key word */
+    .eyebrow {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 8px;
+    }
+    h1 { font-size: 34px; font-weight: 700; line-height: 1.15; }
+    h1 .hl {
+      background: linear-gradient(transparent 55%, var(--highlight) 55%, var(--highlight) 92%, transparent 92%);
+      padding: 0 2px;
+    }
+    .sub { color: var(--muted); margin: 10px 0 28px; font-size: 16px; }
+
+    /* Language toggle: two simple buttons */
+    .lang { display: flex; gap: 8px; margin-bottom: 14px;
+            font-family: 'Segoe UI', system-ui, sans-serif; }
+    .lang button {
+      border: 1px solid var(--line); background: white; color: var(--ink);
+      padding: 7px 16px; border-radius: 999px; font-size: 14px; cursor: pointer;
+    }
+    .lang button.active {
+      background: var(--ink); color: white; border-color: var(--ink);
+    }
+
+    /* Question box */
+    form { display: flex; gap: 8px; }
+    input[type="text"] {
+      flex: 1; padding: 13px 16px; font-size: 16px; font-family: inherit;
+      border: 1px solid var(--line); border-radius: 10px; background: white;
+      color: var(--ink);
+    }
+    input[type="text"]:focus { outline: 2px solid var(--highlight); border-color: transparent; }
+    .ask-btn {
+      padding: 13px 22px; font-size: 15px; border: none; border-radius: 10px;
+      background: var(--ink); color: white; cursor: pointer;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+    .ask-btn:disabled { opacity: 0.5; cursor: wait; }
+
+    /* Example questions the user can tap */
+    .examples { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+    .examples button {
+      font-family: 'Segoe UI', system-ui, sans-serif; font-size: 13px;
+      border: 1px dashed var(--line); background: transparent; color: var(--muted);
+      padding: 6px 12px; border-radius: 999px; cursor: pointer;
+    }
+    .examples button:hover { color: var(--ink); border-color: var(--ink); }
+
+    /* Answer card: styled like an index card with a ruled top line */
+    .answer {
+      margin-top: 26px; background: white; border: 1px solid var(--line);
+      border-top: 3px solid var(--highlight); border-radius: 10px;
+      padding: 20px 22px; font-size: 17px; line-height: 1.65;
+      white-space: pre-wrap; display: none;
+    }
+    .answer.show { display: block; }
+    footer {
+      margin-top: 36px; font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 12px; color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">Demo · One district's handbook</p>
+  <h1>Understand your school's <span class="hl">handbook</span>, in plain words.</h1>
+  <p class="sub" id="subtitle">Ask a question about district policy. Answers come straight from the handbook — no legalese.</p>
+
+  <!-- Language toggle: just switches one word we send to the server -->
+  <div class="lang">
+    <button id="btn-en" class="active" onclick="setLang('English')">English</button>
+    <button id="btn-es" onclick="setLang('Spanish')">Español</button>
+  </div>
+
+  <form onsubmit="ask(event)">
+    <input type="text" id="question" placeholder="e.g. How many absences are allowed?" autocomplete="off">
+    <button type="submit" class="ask-btn" id="askBtn">Ask</button>
+  </form>
+
+  <div class="examples" id="examples"></div>
+
+  <div class="answer" id="answer"></div>
+
+  <footer>Answers are AI-generated from the official handbook and may contain errors. Always confirm important decisions with your school's front office.</footer>
+</main>
+
+<script>
+  // Current language — changed by the toggle buttons above.
+  let language = "English";
+
+  const exampleQs = {
+    English: [
+      "What is the attendance policy?",
+      "How do I appeal a suspension?",
+      "What is the dress code?"
+    ],
+    Spanish: [
+      "¿Cuál es la política de asistencia?",
+      "¿Cómo apelo una suspensión?",
+      "¿Cuál es el código de vestimenta?"
+    ]
+  };
+
+  function setLang(l) {
+    language = l;
+    document.getElementById("btn-en").classList.toggle("active", l === "English");
+    document.getElementById("btn-es").classList.toggle("active", l === "Spanish");
+    document.getElementById("question").placeholder =
+      l === "Spanish" ? "p. ej. ¿Cuántas ausencias se permiten?" : "e.g. How many absences are allowed?";
+    document.getElementById("subtitle").textContent =
+      l === "Spanish"
+        ? "Haga una pregunta sobre la política del distrito. Las respuestas vienen directamente del manual."
+        : "Ask a question about district policy. Answers come straight from the handbook — no legalese.";
+    renderExamples();
+  }
+
+  // Renders the tappable example questions under the search box.
+  function renderExamples() {
+    const box = document.getElementById("examples");
+    box.innerHTML = "";
+    exampleQs[language].forEach(q => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = q;
+      b.onclick = () => { document.getElementById("question").value = q; ask(); };
+      box.appendChild(b);
+    });
+  }
+  renderExamples();
+
+  // Sends the question to our Flask server, which calls Claude.
+  async function ask(event) {
+    if (event) event.preventDefault();  // stop the page from reloading
+    const q = document.getElementById("question").value.trim();
+    if (!q) return;
+
+    const btn = document.getElementById("askBtn");
+    const answerBox = document.getElementById("answer");
+    btn.disabled = true;
+    answerBox.classList.add("show");
+    answerBox.textContent = language === "Spanish" ? "Buscando en el manual…" : "Checking the handbook…";
+
+    try {
+      const res = await fetch("/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: q, language: language })
+      });
+      const data = await res.json();
+      answerBox.textContent = data.answer;
+    } catch (err) {
+      answerBox.textContent = "Could not reach the server. Is app.py running?";
+    }
+    btn.disabled = false;
+  }
+</script>
+</body>
+</html>
