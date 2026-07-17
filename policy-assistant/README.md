@@ -1,12 +1,12 @@
-# Handbook Helper — Plain-Language School Policy Virtual Assistant
+# Handbook Helper — Plain Language School Policy Virtual Assistant
 
-A small web app that answers questions about a school district handbook in plain, friendly language — in English or Spanish — powered by the Claude API.
+A small web app that answers questions about a school district handbook in plain, friendly language in English or Spanish powered by the Claude API.
 
-Before studying computer science, I worked in a school district — first as a parent facilitator, then as a clerk. My unofficial job was translation: not just Spanish to English, but policy-speak to plain language. Families would come to my desk because the answer to a simple question was buried in a 100 page handbook. This project turns that job into software, so any family can ask a question in English or Spanish and get a clear answer in seconds.
+I have worked in a school district, first as a parent facilitator, then as a clerk. My unofficial job was translation: not just Spanish to English, but policy speak to plain language. Families would come to my desk because the answer to a simple question was buried in a 100 page handbook. This project turns that job into software, so any family can ask a question in English or Spanish and get a clear answer in seconds.
 
 ## What it does
 - Ask a question about district policy in a text box
-- Get a short, plain-language answer at ~6th-grade reading level
+- Get a short, plain language answer at ~6th-grade reading level
 - Toggle between English and Español
 - Honest by design: if the handbook doesn't cover it, the app says so and points the family to the front office
 
